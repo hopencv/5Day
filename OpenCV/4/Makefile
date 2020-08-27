@@ -1,7 +1,7 @@
 CC = g++
 
 CFLAGS = -w -Wall -O2
-SRCS = opencv_imagefile_read.c 
+SRCS = opencv_image_threshold.c 
 
 PROG = test
 

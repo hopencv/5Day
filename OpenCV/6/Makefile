@@ -1,7 +1,7 @@
 CC = g++
 
 CFLAGS = -w -Wall -O2
-SRCS = opencv_image_perspective.c 
+SRCS = opencv_image_hough_transform.c 
 
 PROG = test
 

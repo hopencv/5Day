@@ -53,7 +53,7 @@ int main(){
 	Scalar YELLOW(0,255,255);
 	//////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	mat_image_org_color = imread("/home/pi/HancomMDS/AutoCar/C++/OpenCV/5/images/line_1_0.jpg");
+	mat_image_org_color = imread("/home/pi/HancomMDS/AutoCar/C++/OpenCV/7/images/line_1_0.jpg");
 	
 	img_width = mat_image_org_color.size().width;
 	img_height = mat_image_org_color.size().height;
@@ -74,7 +74,7 @@ int main(){
 	
 	while(1)
 	{
-		mat_image_org_color=imread("/home/pi/HancomMDS/AutoCar/C++/OpenCV/5/images/line_2_0.jpg");
+		mat_image_org_color=imread("/home/pi/HancomMDS/AutoCar/C++/OpenCV/7/images/line_2_0.jpg");
 		cvtColor(mat_image_org_color,mat_image_org_gray,CV_RGB2GRAY); //coloar to gray conversion
 		//threshold(mat_image_org_gray,mat_image_canny_Edge,200,255,THRESHO_BINARY);
         
