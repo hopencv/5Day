@@ -30,7 +30,7 @@ int main(void)
 	
 	
    
-	VideoCapture cap("/home/pi/HancomMDS/AutoCar/track-s.mkv");
+	VideoCapture cap("/home/pi/HancomMDS/AutoCar/C++/OpenCV/5/images/track-s.mkv");
 	
 
 	if (!cap.isOpened()) 
