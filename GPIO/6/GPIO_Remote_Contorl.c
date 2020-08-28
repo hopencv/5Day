@@ -1,0 +1,254 @@
+#include <stdio.h>
+#include <string.h>
+#include <wiringPi.h>
+#include <signal.h>
+#include <wiringSerial.h>
+#include <termio.h>
+#include <stdlib.h>
+#include <softPwm.h>
+#include <stdio.h>
+#include <opencv2/opencv.hpp>
+#include <iostream>  
+
+#define IMG_Width     640
+#define IMG_Height    480
+
+
+
+#define GPIO0 0  //Physical 11
+#define GPIO3 3  //Physical 15
+
+
+#define ENA 1 //Physical 
+#define IN1 4 //Physical 
+#define IN2 5 //Physical 
+
+#define ENB 0 //Physical 
+#define IN3 2 //Physical 
+#define IN4 3 //Physical 
+
+#define MAX_PWM_DUTY 100
+#define baud_rate 115200
+
+using namespace cv;
+using namespace std;
+
+int getch(void)
+{
+    int ch;
+    struct termios buf;
+    struct termios save;
+
+    tcgetattr(0, &save);
+    buf = save;
+    buf.c_lflag &= ~(ICANON|ECHO);
+    buf.c_cc[VMIN] = 1;
+    buf.c_cc[VTIME] = 0;
+    tcsetattr(0, TCSAFLUSH, &buf);
+    ch = getchar();
+    tcsetattr(0, TCSAFLUSH, &save);
+    return ch;
+}
+
+int motor_control_setup(void)
+{
+    if(wiringPiSetup()==-1)
+    {
+        printf("wiringPi Setup error !\n");
+        return -1;
+    }
+
+    pinMode(ENA,OUTPUT);
+    pinMode(IN1,OUTPUT);
+    pinMode(IN2,OUTPUT);
+    
+    pinMode(ENB,OUTPUT);
+    pinMode(IN3,OUTPUT);
+    pinMode(IN4,OUTPUT);
+    
+    softPwmCreate(ENA,1,MAX_PWM_DUTY);
+    softPwmCreate(ENB,1,MAX_PWM_DUTY);
+    
+    
+    softPwmWrite(ENA,0);
+    softPwmWrite(ENB,0);
+    
+    return 0;
+    
+    
+}
+
+void motor_control_r(int pwm)
+{
+    if(pwm>0) 
+    {
+        digitalWrite(IN1,LOW);
+        digitalWrite(IN2,HIGH);
+        softPwmWrite(ENA,pwm);
+    }
+    else if(pwm == 0)
+    {
+        digitalWrite(IN1,LOW);
+        digitalWrite(IN2,LOW);
+        softPwmWrite(ENA,0);
+    }
+    else
+    {
+        digitalWrite(IN1,HIGH);
+        digitalWrite(IN2,LOW);
+        softPwmWrite(ENA,-pwm);
+    }
+}
+
+void motor_control_l(int pwm)
+{
+    if(pwm>0) 
+    {
+        digitalWrite(IN3,LOW);
+        digitalWrite(IN4,HIGH);
+        softPwmWrite(ENB,pwm);
+    }
+    else if(pwm == 0)
+    {
+        digitalWrite(IN3,LOW);
+        digitalWrite(IN4,LOW);
+        softPwmWrite(ENB,0);
+    }
+    else
+    {
+        digitalWrite(IN3,HIGH);
+        digitalWrite(IN4,LOW);
+        softPwmWrite(ENB,-pwm);
+    }
+}
+void sig_Handler(int seg)
+{
+    printf("\n\n\n\n\n\n\n\nProgram and Motor Stop!\n\n\n\n\n\n\n");
+    motor_control_r(0);
+    motor_control_l(0);
+    exit(0);
+    
+}
+
+int main(void)
+{
+    
+    int fd;
+    int pwm_a = 0;
+    int pwm_r=0;
+    int pwm_l=0;
+    int flag=0;
+    unsigned char test,receive_char;
+    int img_width, img_height;
+	img_width = 640;
+	img_height = 480;
+		
+	//////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////  OpenCV  변수 선언 ////////////////////////////////////
+	Mat mat_image_org_color;
+    
+    
+    VideoCapture cap(-1);
+	
+    cap.set(CV_CAP_PROP_FRAME_WIDTH, img_width);
+	cap.set(CV_CAP_PROP_FRAME_HEIGHT,img_height);
+
+    
+    if (!cap.isOpened()) 
+	{
+		cerr << "에러 - 카메라를 열 수 없습니다.\n";
+		return -1;
+	}
+    cap.read(mat_image_org_color);
+    //printf("Image size[%3d,%3d]\n", img_width,img_height);
+    
+    namedWindow("Display window", CV_WINDOW_NORMAL);
+    resizeWindow("Display window", img_width,img_height);
+    moveWindow("Display window", 10, 10);
+	
+    
+        
+        
+    if(motor_control_setup() == -1)
+    {
+        return -1;
+    }
+    
+    signal(SIGINT,sig_Handler);
+    
+    test='B';
+
+    
+    while(1)
+    {
+        test=getch();
+        printf("%d\n",test);
+        switch(test)
+        {
+        case 'w':
+            motor_control_r(pwm_r);
+            motor_control_l(pwm_l);
+            pwm_r++;
+            pwm_l++;
+            if(pwm_r>100) pwm_r=100;
+            if(pwm_l>100) pwm_l=100;
+            break;
+        case 's':// ㅈㅓㅇㅈㅣ;
+            motor_control_r(0);
+            motor_control_l(0);
+            //pwm_r--;
+            //pwm_l--;
+            break;
+        case 'x': // ㄱㅏㅁㅅㅗㄱ
+            motor_control_r(-pwm_r);
+            motor_control_l(-pwm_l);
+            if(pwm_r<-100 ) pwm_r= -100;
+            if(pwm_l<-100 ) pwm_l = -100;
+            pwm_r--;
+            pwm_l--;
+            break;
+        case 'a': 
+            motor_control_r(pwm_r);
+            motor_control_l(pwm_l);
+            
+            if(pwm_r>100) pwm_r=100;
+            if(pwm_l<-100) pwm_l= -100;
+            
+            pwm_r++;
+            pwm_l--;
+            break;
+        case 'd': // ㄱㅏㅁㅅㅗㄱ
+            motor_control_r(pwm_r);
+            motor_control_l(pwm_l);
+            
+            if(pwm_r < -100) pwm_r =-100;
+            if(pwm_l>100) pwm_l=100;
+            pwm_r--;
+            pwm_l++;
+            break;
+        case 'p': // ㄱㅏㅁㅅㅗㄱ
+            motor_control_r(0);
+            motor_control_l(0);
+            return 0;
+            break;
+        }
+        
+        if (!cap.isOpened()) 
+        {
+            cerr << "에러 - 카메라를 열 수 없습니다.\n";
+            return -1;
+        }
+        cap.read(mat_image_org_color);
+        if(!mat_image_org_color.empty())
+            imshow("Display window", mat_image_org_color);  
+        if(waitKey(10) > 0)
+            break;  
+        //motor_control_r(-30);
+        //motor_control_l(-30);
+
+        //delay(500);
+    }
+
+    return 0;
+
+}
