@@ -113,7 +113,7 @@ int main(){
 		int guide_width1 = 50;
 		int guide_height1 = 30;
 		int guide_l_center = 0 + 70;
-		int guide_r_center = IMG_Width-70;;
+		int guide_r_center = IMG_Width-70;
 		rectangle(mat_image_org_color_Overlay, Point(50, ASSIST_BASE_LINE-ASSIST_BASE_WIDTH), Point(IMG_Width-50, ASSIST_BASE_LINE + ASSIST_BASE_WIDTH), Scalar(0,255,0), 1, LINE_AA);
 		line(mat_image_org_color_Overlay, Point(guide_l_center-guide_width1, ASSIST_BASE_LINE), Point(guide_l_center,ASSIST_BASE_LINE),Scalar(0,255,255), 1, 0);
 		line(mat_image_org_color_Overlay, Point(guide_l_center, ASSIST_BASE_LINE), Point(guide_l_center+guide_width1,ASSIST_BASE_LINE),Scalar(0,255,255), 1, 0);
